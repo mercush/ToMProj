@@ -1,6 +1,6 @@
-using ToMProj
+using RPS 
 using Test
 
-@testset "ToMProj.jl" begin
+@testset "RPS.jl" begin
     # Write your tests here.
 end
