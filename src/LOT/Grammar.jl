@@ -66,9 +66,10 @@ struct Random <: InternalNode
     expr1::Node
     expr2::Node
     expr3::Node
+    certainty::Float64
     size::Int
 end
-Random(e1, e2, e3) = Random(e1, e2, e3, size(e1)+size(e2)+size(e3)+1)
+Random(e1, e2, e3, c) = Random(e1, e2, e3, c, size(e1)+size(e2)+size(e3)+1)
 
 struct CustomInt <: TerminalNode
     param_int::Int
@@ -164,9 +165,9 @@ Leq(b1, b2) = Leq(b1, b2, size(b1)+size(b2)+1)
     elseif isa(node, Random)
         return ({:rand_move} ~ cat0(
             softmax([ 
-                eval_kern(node.expr1, state), 
-                eval_kern(node.expr2, state), 
-                eval_kern(node.expr3, state)])))
+                node.certainty*eval_kern(node.expr1, state), 
+                node.certainty*eval_kern(node.expr2, state), 
+                node.certainty*eval_kern(node.expr3, state)])))
     elseif isa(node, Equal)
         return eval_kern(node.bool_input1, state) == eval_kern(node.bool_input2, state)
     elseif isa(node, Lt)

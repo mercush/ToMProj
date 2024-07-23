@@ -43,3 +43,17 @@ AutoGP is so easy to implement because there is only one generation rule:
 
 
 Expr -> Linear | SquaredExp | Periodic | Plus(Expr, Expr) | Times(Expr, Expr)
+
+
+
+
+Most of the time, get tree with bad score. Sometimes you get something with a good score. Random move with high invtemp that sets a preference against opponent moves.
+Possibly could be improved with a better inference algorithm. We could try adding swap moves and attach/detach.
+Possibly could be improved if we hard code primitives involving random moves. 
+
+Increasing the number of rejuvenation moves doesn't appear to improve inference results by much.
+Increase the weight of random moves.
+Increase the expressivity of random moves (choice over moves or transition).
+Make Random moves more structured
+
+Why might it be preferring random moves over conditional operations with softmax noise? Possibly because CountTransition, CountMove, etc. are important. 

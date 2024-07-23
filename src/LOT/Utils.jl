@@ -18,6 +18,6 @@ function new_state(prev_state, new_move, new_oppmove)
     return State(moves, oppmoves)
 end
 
-noisy_one_hot = (certainty, m) -> [i == m ? certainty : 0 for i=0:2]
+noisy_one_hot = (invtemp, m) -> [i == m ? invtemp : 0 for i=0:2]
 
 @dist cat0(wt) = categorical(wt)-1

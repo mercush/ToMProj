@@ -6,9 +6,9 @@ include("Proposals.jl")
 
 @dist noisy_move(wt) = categorical(wt)-1
 
-@gen (static) function transition(t::Int, prev_state::State, kernel::Node, certainty)::State
+@gen (static) function transition(t::Int, prev_state::State, kernel::Node, invtemp)::State
     new_move_proposed ~ eval_kern(kernel, prev_state)
-    move ~ noisy_move(softmax(noisy_one_hot(certainty, new_move_proposed)))
+    move ~ noisy_move(softmax(noisy_one_hot(invtemp, new_move_proposed)))
     opp_move ~ z3_dist()
     return new_state(prev_state, move, opp_move)
 end
@@ -18,8 +18,8 @@ chain = Unfold(transition)
 @gen (static) function unfold_model(T::Int)
     init_state ~ init_state(4)
     tree ~ pcfg()
-    certainty ~ uniform(0,10) # maybe use gaussian drift to infer noise
-    chain ~ chain(T, init_state, tree, certainty)
+    invtemp ~ uniform(0,10) # maybe use gaussian drift to infer noise
+    chain ~ chain(T, init_state, tree, invtemp)
     return (init_state, chain)
 end
 

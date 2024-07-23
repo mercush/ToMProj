@@ -44,7 +44,7 @@ Expr_child = [CustomZ3, CustomInt, CountMove, CountOppMove, CountTransition, Cou
 end
 
 MoveType_child = [RawMove, PrevMove, PrevOppMove, Inc, Dec, Random]
-@dist MoveType_child_dist() = MoveType_child[categorical(normalize([2,2,2,1,1,1]))]
+@dist MoveType_child_dist() = MoveType_child[categorical(normalize([2,2,2,1,1,3]))]
 @gen function pcfg_MoveType()
     node_type ~ MoveType_child_dist()
     if node_type == RawMove
@@ -61,7 +61,8 @@ MoveType_child = [RawMove, PrevMove, PrevOppMove, Inc, Dec, Random]
         return Random(
             {:expr1} ~ pcfg_Expr(), 
             {:expr2} ~ pcfg_Expr(), 
-            {:expr3} ~ pcfg_Expr())
+            {:expr3} ~ pcfg_Expr(),
+            {:invtemp} ~ normal(0,0.5))
     end
     error("$node_type not a valid type")
 end

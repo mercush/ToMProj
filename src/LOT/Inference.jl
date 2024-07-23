@@ -8,19 +8,35 @@ function initialize_trace(moves_input::Matrix{Int64}, moves_condition::Vector{In
     return tr
 end
 
-function get_leaves(choices, base)
+function get_invtemps(choices::ChoiceMap, base::Union{Symbol, Pair})
     submap = Gen.get_submap(choices, base)
     leaf_addrs = Any[
         (base => address)
         for (address, value) in Gen.get_values_shallow(submap)
-        if address == :certainty
+        if address == :invtemp
     ]
     internal_nodes = [
         address
         for (address, value) in Gen.get_submaps_shallow(submap)
     ]
     return cat(leaf_addrs, [
-            map((x) -> base => x, get_leaves(submap, node)) for node in internal_nodes]...
+        map((x) -> base => x, get_invtemps(submap, node)) for node in internal_nodes]...
+        , dims=1)
+end
+
+function get_invtemps(choices::ChoiceMap)
+    submap = choices
+    leaf_addrs = Any[
+        address
+        for (address, value) in Gen.get_values_shallow(submap)
+        if address == :invtemp
+    ]
+    internal_nodes = [
+        address
+        for (address, value) in Gen.get_submaps_shallow(submap)
+    ]
+    return cat(leaf_addrs, 
+        [get_invtemps(submap, node) for node in internal_nodes]...
         , dims=1)
 end
 
@@ -62,7 +78,10 @@ function unfold_particle_filter_rejuv(num_particles::Int, n_mcmc::Int, df::DataF
             for i=1:num_particles
                 for j=1:n_mcmc
                     state.traces[i], = mh(state.traces[i], regen_random_subtree_randomness, (), subtree_involution)
-                    state.traces[i], = mh(state.traces[i], gaussian_drift, ())
+
+                    ch = get_choices(state.traces[i])
+                    invtemps = get_invtemps(ch)
+                    state.traces[i], = mh(state.traces[i], gaussian_drift, (invtemps,))
                 end
             end
             

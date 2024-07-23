@@ -96,7 +96,9 @@ end
 #     (new_trace, backward_choices, weight)
 # end
 
-@gen function gaussian_drift(tr)
-    certainty ~ normal(tr[:certainty], 0.5)
+@gen function gaussian_drift(tr, addrs)
+    for addr in addrs
+        {addr} ~ normal(tr[addr], 0.5)
+    end
 end
 
