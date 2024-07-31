@@ -18,6 +18,22 @@ function new_state(prev_state, new_move, new_oppmove)
     return State(moves, oppmoves)
 end
 
-noisy_one_hot = (invtemp, m) -> [i == m ? invtemp : 0 for i=0:2]
-
 @dist cat0(wt) = categorical(wt)-1
+
+@gen function dirichlet3(wt)
+    gamma1 ~ gamma(wt[1],1)
+    gamma2 ~ gamma(wt[2],1)
+    gamma3 ~ gamma(wt[3],1)
+    unnormalized_weights = [gamma1, gamma2, gamma3]
+    return unnormalized_weights / sum(unnormalized_weights)
+end
+
+const EPS = 0.01
+
+function noisy_onehot(noise, i)
+    [i==j ? 1-noise : noise/2 for j=0:2]
+end
+
+function onehot(i)
+    [i==j ? 1 : 0 for j=0:2]
+end

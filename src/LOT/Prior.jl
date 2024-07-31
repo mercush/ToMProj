@@ -23,69 +23,91 @@ Op_child = [MakeMove, If]
     error("$node_type not a valid type")
 end
 
-Expr_child = [CustomZ3, CustomInt, CountMove, CountOppMove, CountTransition, CountOppTransition]
-@dist Expr_child_dist() = Expr_child[categorical(normalize([2,2,1,1,1,1]))]
-@gen function pcfg_Expr()
-    node_type ~ Expr_child_dist()
-    if node_type == CustomZ3
-        return CustomZ3({:param_z3} ~ z3_dist())
-    elseif node_type == CustomInt
-        return CustomInt({:param_int} ~ int_prior_dist())
-    elseif node_type == CountMove
-        return CountMove({:param_z3} ~ z3_dist())
-    elseif node_type == CountOppMove
-        return CountOppMove({:param_z3} ~ z3_dist())
-    elseif node_type == CountTransition
-        return CountTransition({:param_z3} ~ z3_dist())
-    elseif node_type == CountOppTransition
-        return CountOppTransition({:param_z3} ~ z3_dist())
-    end
-    error("$node_type not a valid type")
-end
-
 MoveType_child = [RawMove, PrevMove, PrevOppMove, Inc, Dec, Random]
-@dist MoveType_child_dist() = MoveType_child[categorical(normalize([2,2,2,1,1,3]))]
+@dist MoveType_child_dist() = MoveType_child[categorical(normalize([1,1,1,1,1,1]))]
 @gen function pcfg_MoveType()
     node_type ~ MoveType_child_dist()
     if node_type == RawMove
-        return RawMove({:param_z3} ~ z3_dist())
+        return node_type({:param_z3} ~ z3_dist())
     elseif node_type == PrevMove
-        return PrevMove()
+        return node_type()
     elseif node_type == PrevOppMove
-        return PrevOppMove()
+        return node_type()
     elseif node_type == Inc
-        return Inc({:move_type} ~ pcfg_MoveType())
+        return node_type({:move_type} ~ pcfg_MoveType())
     elseif node_type == Dec
-        return Dec({:move_type} ~ pcfg_MoveType())
+        return node_type({:move_type} ~ pcfg_MoveType())
     elseif node_type == Random
-        return Random(
-            {:expr1} ~ pcfg_Expr(), 
-            {:expr2} ~ pcfg_Expr(), 
-            {:expr3} ~ pcfg_Expr(),
-            {:invtemp} ~ normal(0,0.5))
+        return {:random} ~ pcfg_Random()
     end
     error("$node_type not a valid type")
 end
 
-Bool_child = [Equal, Lt, Leq]
-@dist Bool_child_dist() = Bool_child[categorical(normalize(ones(3)))]
-@gen function pcfg_Bool()
-    node_type ~ Bool_child_dist()
-    bool_input1 ~ pcfg_BoolInput()
-    bool_input2 ~ pcfg_BoolInput()
-    return node_type(bool_input1, bool_input2)
+Expr_child = [CustomZ3, CustomInt, CountMove, CountOppMove, CountTransition, 
+    CountOppTransition, PrevMoveExpr, PrevOppMoveExpr, IncExpr, DecExpr, PrevOutcome]
+@dist Expr_child_dist() = Expr_child[categorical(normalize(ones(11)))]
+@gen function pcfg_Expr()
+    node_type ~ Expr_child_dist()
+    if node_type == CustomZ3
+        return node_type({:param_z3} ~ z3_dist())
+    elseif node_type == CustomInt
+        return node_type({:param_int} ~ int_prior_dist())
+    elseif node_type == CountMove
+        return node_type({:param_z3} ~ z3_dist())
+    elseif node_type == CountOppMove
+        return node_type({:param_z3} ~ z3_dist())
+    elseif node_type == CountTransition
+        return node_type({:param_z3} ~ z3_dist())
+    elseif node_type == CountOppTransition
+        return node_type({:param_z3} ~ z3_dist())
+    elseif node_type == PrevMoveExpr
+        return node_type()
+    elseif node_type == PrevOppMoveExpr
+        return node_type()
+    elseif node_type == IncExpr
+        return node_type({:expr} ~ pcfg_Expr())
+    elseif node_type == DecExpr
+        return node_type({:expr} ~ pcfg_Expr())
+    elseif node_type == PrevOutcome
+        return node_type()
+    end
+    error("$node_type not a valid type")
 end
 
-BoolInput_child = [Expr, MoveType, PrevOutcome]
-@dist BoolInput_child_dist() = BoolInput_child[categorical(normalize([6,6,1]))]
-@gen function pcfg_BoolInput()
-    node_type ~ BoolInput_child_dist()
-    if node_type == Expr
-        return {:expr} ~ pcfg_Expr()
-    elseif node_type == MoveType
-        return {:move_type} ~ pcfg_MoveType()
-    elseif node_type == PrevOutcome
-        return PrevOutcome()
+Random_child = [RandomMoveFixed, RandomTransitionFixed, RandomCorrPrevMove,
+    RandomInvCorrPrevMove, RandomCorrPrevTransition, RandomInvCorrPrevTransition]
+@dist Random_child_dist() = Random_child[categorical(normalize([1,1,1,1,1,1]))]
+@gen function pcfg_Random()
+    node_type ~ Random_child_dist()
+    if node_type == RandomMoveFixed
+        wt = ({*} ~ dirichlet3([1,1,1]))
+        return node_type(wt[1], wt[2], wt[3])
+    elseif node_type == RandomTransitionFixed
+        wt = ({*} ~ dirichlet3([1,1,1]))
+        return node_type(wt[1], wt[2], wt[3])
+    elseif node_type == RandomCorrPrevMove
+        return node_type()
+    elseif node_type == RandomInvCorrPrevMove
+        return node_type()
+    elseif node_type == RandomCorrPrevTransition
+        return node_type()
+    elseif node_type == RandomInvCorrPrevTransition
+        return node_type()
+    end
+    error("$node_type not a valid type")
+end
+
+Bool_child = [Equal, Lt, Leq, Flip]
+@dist Bool_child_dist() = Bool_child[categorical(normalize(ones(4)))]
+@gen function pcfg_Bool()
+    node_type ~ Bool_child_dist()
+    if node_type in [Equal, Lt, Leq]
+        return node_type({:expr1} ~ pcfg_Expr(), {:expr2} ~ pcfg_Expr())
+    elseif node_type == Flip
+        gamma1 ~ gamma(1,1)
+        gamma2 ~ gamma(1,1)
+        partition = gamma1+gamma2
+        return node_type(gamma1/partition)
     end
     error("$node_type not a valid type")
 end

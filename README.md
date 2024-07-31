@@ -2,13 +2,22 @@
 
 [![Build Status](https://github.com/mercush/RPS.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/mercush/RPS.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-Op
+
+
 
 Op -> MakeMove(MoveType) | If(Bool) (Op) Else (Op)
-Expr -> Z3 | Int | CountMove | CountOppMove | CountTransition | CountOppTransition
-MoveType -> RawMove | PrevMove | PrevOppMove | Inc(MoveType) | Dec(MoveType) | Random(Expr, Expr, Expr)
-Bool -> Equals(BoolInput, BoolInput) | Lt(BoolInput, BoolInput) | Leq(BoolInput, BoolInput)
-BoolInput -> Expr | MoveType | PrevOutcome
+
+MoveType -> RawMove | PrevMove | PrevOppMove | Inc(MoveType) | Dec(MoveType) | Random
+
+Expr -> Z3 | Int | CountMove | CountOppMove | CountTransition | CountOppTransition | PrevMoveExpr | PrevOppMoveExpr | IncExpr(Expr) | DecExpr(Expr) | PrevOutcome
+
+Random -> RandomMoveFixed | RandomTransitionFixed | RandomCorrPrevMove | RandomInvCorrPrevMove | RandomCorrPrevTransition | RandomInvCorrPrevTransition
+
+Bool -> Equals(Expr, Expr) | Lt(Expr, Expr) | Leq(Expr, Expr) | Flip
+
+
+
+
 
 Do debugging by playing with a simulated model
 Compare the performance of this model with ChatGPT
@@ -57,3 +66,8 @@ Increase the expressivity of random moves (choice over moves or transition).
 Make Random moves more structured
 
 Why might it be preferring random moves over conditional operations with softmax noise? Possibly because CountTransition, CountMove, etc. are important. 
+
+See proposals that are being made.
+
+Posteriors for small sample sizes are much less concentrated.
+Maybe proposal isn't changing random subtree.
