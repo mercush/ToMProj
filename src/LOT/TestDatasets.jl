@@ -1,5 +1,6 @@
 import CSV
 import JSON
+import Plots
 include("Inference.jl")
 
 rps_table = Dict("rock" => 0, "paper" => 1, "scissors" => 2)
@@ -29,7 +30,7 @@ df_test = hcat(gameplayer[1:50,:], gameopp[1:50,:])
 # df_test = DataFrames.DataFrame(player_move=M[:,1], opp_move=M[:,2])
 
 # WSLS 
-# n = 50
+# n = 10
 # M = Matrix{Int64}(undef, n, 2)
 # M[1,1], M[1,2] = 0,0
 # for i = 2:n
@@ -43,6 +44,9 @@ df_test = hcat(gameplayer[1:50,:], gameopp[1:50,:])
 #     M[i,2] = categorical([1/3,1/3,1/3])-1
 # end
 # df_test = DataFrames.DataFrame(player_move=M[:,1], opp_move=M[:,2])
+
+# Empty
+# df_test = DataFrames.DataFrame(player_move=[], opp_move=[])
 
 # Partly random
 # n = 0
@@ -70,24 +74,35 @@ df_test = hcat(gameplayer[1:50,:], gameopp[1:50,:])
 # end
 # df_test = DataFrames.DataFrame(player_move=M[:,1], opp_move=M[:,2])
 
-# ChatGPT
-# j=JSON.parsefile("files/chatgpt.json")
-# M = Matrix{Int64}(undef, length(j["rounds"]), 2)
-# for i = 1:length(j["rounds"])
-#     M[i,1] = rps_table[j["rounds"][i]["player1"]]
-#     M[i,2] = rps_table[j["rounds"][i]["player2"]]
+# FIXED 
+# n = 100
+# M = Matrix{Int64}(undef, n, 2)
+# M[1,1], M[1,2] = 0,0
+# for i = 2:n
+#     M[i,1] = 0
+#     M[i,2] = categorical([1/3,1/3,1/3])-1
 # end
 # df_test = DataFrames.DataFrame(player_move=M[:,1], opp_move=M[:,2])
-function run_test()
-    for i=1:20
-        println("Inference with SMC and rejuvenation")
-        traces_smc_rejuv = unfold_particle_filter_rejuv(100, 10, df_test)
-        scores_smc_rejuv = sort([(Gen.get_score(t), i) for (i,t) in enumerate(traces_smc_rejuv.traces)])
-        display(scores_smc_rejuv[end-9:end])
-        println(traces_smc_rejuv.traces[scores_smc_rejuv[end][2]][:tree])
-    end
+
+# ChatGPT
+j=JSON.parsefile("files/chatgpt.json")
+M = Matrix{Int64}(undef, length(j["rounds"]), 2)
+for i = 1:length(j["rounds"])
+    M[i,1] = rps_table[j["rounds"][i]["player1"]]
+    M[i,2] = rps_table[j["rounds"][i]["player2"]]
 end
-run_test()
+df_test = DataFrames.DataFrame(player_move=M[:,1], opp_move=M[:,2])
+# function run_test()
+#     for i=1:20
+println("Inference with SMC and rejuvenation")
+traces_smc_rejuv = unfold_particle_filter_rejuv(100, 50, df_test)
+scores_smc_rejuv = sort([(Gen.get_score(t), i) for (i,t) in enumerate(traces_smc_rejuv.traces)])
+display(scores_smc_rejuv[end-9:end])
+println(traces_smc_rejuv.traces[scores_smc_rejuv[end][2]][:tree])
+println(traces_smc_rejuv.traces[scores_smc_rejuv[end][2]][:noise])
+#     end
+# end
+# run_test()
 # t = traces_smc_rejuv.traces[scores_smc_rejuv[end][2]]
 # table=Matrix{Int64}(undef, 3,3)
 # for i=0:2

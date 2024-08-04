@@ -34,15 +34,15 @@ function run_mcmc(trace::Gen.Trace, iters::Int)::Gen.Trace
 end
 
 # Inference with SMC
-function unfold_particle_filter(num_particles::Int, df::DataFrames.DataFrame)::Gen.ParticleFilterState
+function unfold_particle_filter(n_particles::Int, df::DataFrames.DataFrame)::Gen.ParticleFilterState
 # incorporate involutive MCMC here
     init_obs = Gen.choicemap((:init_move => df.player_move[1]),
         (:init_outcome => df.player_outcome[1]))
-    state = initialize_particle_filter(unfold_model, (0,), init_obs, num_particles)
+    state = initialize_particle_filter(unfold_model, (0,), init_obs, n_particles)
     
     p = Progress(size(df, 1)-1; dt=1.0)
     for t=1:size(df, 1)-1
-        maybe_resample!(state, ess_threshold=num_particles/2)
+        maybe_resample!(state, ess_threshold=n_particles/2)
         obs = Gen.choicemap((:chain => t => :move) => df.player_move[t+1],
             (:chain => t => :outcome) => df.player_outcome[t+1])
         particle_filter_step!(state, (t,), (UnknownChange(),), obs)
@@ -53,16 +53,16 @@ function unfold_particle_filter(num_particles::Int, df::DataFrames.DataFrame)::G
 end
 
 # Inference with rejuvenation
-function unfold_particle_filter_rejuv(num_particles::Int, n_mcmc::Int, df::DataFrames.DataFrame)
+function unfold_particle_filter_rejuv(n_particles::Int, n_mcmc::Int, df::DataFrames.DataFrame)
     # incorporate involutive MCMC here
     init_obs = Gen.choicemap((:init_move => df.player_move[1]),
         (:init_outcome => df.player_outcome[1]))
-    state = initialize_particle_filter(unfold_model_dynamic, (0,), init_obs, num_particles)
+    state = initialize_particle_filter(unfold_model_dynamic, (0,), init_obs, n_particles)
 
     p = Progress(size(df, 1)-1; dt=1.0)
     for t=1:size(df, 1)-1
         
-        for i=1:num_particles
+        for i=1:n_particles
             for j=1:n_mcmc
                 state.traces[i], accepted = Gen.mh(state.traces[i], regen_random_subtree_randomness, (), subtree_involution)
                 
@@ -75,7 +75,7 @@ function unfold_particle_filter_rejuv(num_particles::Int, n_mcmc::Int, df::DataF
             end
         end
         
-        maybe_resample!(state, ess_threshold=num_particles/2)
+        maybe_resample!(state, ess_threshold=n_particles/2)
         obs = Gen.choicemap((:chain => t => :move) => df.player_move[t+1],
             (:chain => t => :outcome) => df.player_outcome[t+1])
         Gen.particle_filter_step!(state, (t,), (UnknownChange(),), obs)

@@ -13,5 +13,5 @@ include("Inference.jl")
 # end
 
 init_obs = choicemap()
-num_particles = 10
-state = initialize_particle_filter(unfold_model, (0,), init_obs, num_particles)
+n_particles = 10
+state = initialize_particle_filter(unfold_model, (0,), init_obs, n_particles)

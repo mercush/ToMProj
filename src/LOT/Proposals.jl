@@ -144,17 +144,10 @@ end
 end
 
 @gen function drift_gamma(tr, addr)
-    t = 50
+    t = 100
     # for addr in addrs
     #     # TODO: See what happens if you normalize first.
     #     {addr} ~ gamma(t*tr[addr], 1/t)
     # end
-    {addr} ~ gamma(t*tr[addr], 1/t)
-end
-
-@gen function rejuv_move(tr, t)
-    state = t == 1 ? get_retval(tr)[1] : get_retval(tr)[2][end-1]
-    {:chain => t => :new_move_proposed} ~ eval_kern(
-        tr[:tree], 
-        state)
+    {addr} ~ gamma(t^2*tr[addr], 1/t^2)
 end

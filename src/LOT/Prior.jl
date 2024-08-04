@@ -76,7 +76,7 @@ end
 
 Random_child = [RandomMoveFixed, RandomTransitionFixed, RandomCorrPrevMove,
     RandomInvCorrPrevMove, RandomCorrPrevTransition, RandomInvCorrPrevTransition]
-@dist Random_child_dist() = Random_child[categorical(normalize([1,1,1,1,1,1]))]
+@dist Random_child_dist() = Random_child[categorical(normalize(ones(6)))]
 @gen function pcfg_Random()
     node_type ~ Random_child_dist()
     if node_type == RandomMoveFixed
@@ -114,29 +114,7 @@ end
 
 @gen function pcfg()
     return {*} ~ pcfg_Op()
-    # return tree ~ pcfg_Op()
 end
-
-
-# @gen function gen_swap_node(node_type)
-#     if node_type in [MakeMove, If]
-#         return {*} ~ pcfg_Op()
-#     elseif node_type in [CustomInt, CustomZ3, CountMove, CountOppMove, CountTransition, CountOppTransition]
-#         return {*} ~ pcfg_Expr()
-#     elseif node_type in [RawMove, PrevMove, PrevOppMove, Inc, Dec, Random]
-#         return {*} ~ pcfg_MoveType()
-#     elseif node_type in [Equal, Lt, Leq]
-#         return {*} ~ pcfg_Bool()
-#     elseif node_type in [Expr, MoveType, PrevOutcome]
-#         return {*} ~ pcfg_BoolInput()
-#     end
-#     error("$node_type not a valid type")
-# end
-
-# @gen function gen_node(node_type)
-#     if node_type in [MakeMove, If]
-#         return {*} ~ Op_child_dist()
-# end
 
 @gen function init_state(state_size::Int)::State
     moves = [{(:moves, i)} ~ z3_dist() for i=1:state_size]

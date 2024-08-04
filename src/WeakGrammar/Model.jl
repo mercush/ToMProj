@@ -2,7 +2,7 @@ using Gen
 import DataFrames
 using ProgressMeter
 
-include("Eval.jl")
+include("Inference.jl")
 
 kernel_types = [Move, Transition, Outcome, Plus, Times]
 @dist choose_kernel_type() = kernel_types[categorical([0.2, 0.2, 0.2, 0.2, 0.2])];

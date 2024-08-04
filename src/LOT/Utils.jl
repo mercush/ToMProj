@@ -1,3 +1,5 @@
+const EPS = 0.01
+
 function normalize(v::Vector)
     return v/sum(v)
 end
@@ -28,12 +30,10 @@ end
     return unnormalized_weights / sum(unnormalized_weights)
 end
 
-const EPS = 0.01
-
 function noisy_onehot(noise, i)
     [i==j ? 1-noise : noise/2 for j=0:2]
 end
 
 function onehot(i)
-    [i==j ? 1 : 0 for j=0:2]
+    [i==j ? 1. : 0. for j=0:2]
 end
