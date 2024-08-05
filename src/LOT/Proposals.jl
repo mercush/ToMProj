@@ -17,22 +17,6 @@ function get_gamma(choices::ChoiceMap, base::Union{Symbol, Pair})
         , dims=1)
 end
 
-# function get_gamma(choices::ChoiceMap)
-#     submap = choices
-#     leaf_addrs = Any[
-#         address
-#         for (address, value) in Gen.get_values_shallow(submap)
-#         if address in [:continuous, :continuous1, :continuous2, :continuous3]
-#     ]
-#     internal_nodes = [
-#         address
-#         for (address, value) in Gen.get_submaps_shallow(submap)
-#     ]
-#     return cat(leaf_addrs, 
-#         [get_gamma(submap, node) for node in internal_nodes]...
-#         , dims=1)
-# end
-
 @gen function random_node_path(choices::ChoiceMap)::Union{Pair,Symbol}
     submaps = [addr for (addr, val) in get_submaps_shallow(choices)]
     if ({:stop} ~ bernoulli(length(submaps) == 0 ? 1.0 : 0.5))
@@ -51,6 +35,7 @@ end
     end
 end
 
+# subtree proposal
 @gen function gen_subtree(node_type)
     if node_type in [MakeMove, If]
         return {*} ~ pcfg_Op()
@@ -77,14 +62,6 @@ end
     new_subtree ~ gen_subtree(subtree[:node_type])
     return path
 end
-
-# @gen function regen_swap_node_randomness(prev_trace::Gen.Trace)::Union{Pair,Symbol}
-#     choices = get_choices(prev_trace)
-#     path ~ random_node_path(get_submap(choices, :tree))
-#     subtree = get_submap(choices, path)
-#     new_subtree ~ gen_subtree(subtree[:node_type])
-#     return path
-# end
 
 function subtree_involution(
     trace::Trace, 
@@ -114,7 +91,16 @@ function subtree_involution(
     (new_trace, backward_choices, weight)
 end
 
-# function swap_involution(trace::Trace, forward_choices::ChoiceMap, path_to_subtree::Union{Pair, Symbol}, proposal_args)::Tuple{Gen.Trace,Gen.ChoiceMap,Float64}
+# # attach-detach proposal
+# @gen function regen_ad_node_randomness(prev_trace::Gen.Trace)::Union{Pair,Symbol}
+#     choices = get_choices(prev_trace)
+#     path ~ random_node_path(get_submap(choices, :tree))
+#     subtree = get_submap(choices, path)
+#     new_subtree ~ gen_subtree(subtree[:node_type])
+#     return path
+# end
+
+# function ad_involution(trace::Trace, forward_choices::ChoiceMap, path_to_subtree::Union{Pair, Symbol}, proposal_args)::Tuple{Gen.Trace,Gen.ChoiceMap,Float64}
 #     # Need to return a new trace, backward_choices, and a weight.
 #     backward_choices = Gen.choicemap()
     
