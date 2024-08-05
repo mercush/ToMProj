@@ -1,6 +1,3 @@
-function restart()
-    fill(0.1,(3,3))
-end
 function play()
     table = fill(0.1,(3,3))
     transform = Dict("r" => 0, "p" => 1, "s" => 2)
@@ -19,7 +16,7 @@ function play()
 
         likelihood = table[prev+1, m+1]/sum(table[prev+1,:])
         if likelihood < 0.05
-            table = restart()
+            table = fill(0.1,(3,3))
         end
 
         table[prev+1, m+1] += 1

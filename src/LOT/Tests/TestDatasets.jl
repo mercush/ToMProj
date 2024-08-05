@@ -1,7 +1,7 @@
 import CSV
 import JSON
 import Plots
-include("Inference.jl")
+include("../Inference.jl")
 
 rps_table = Dict("rock" => 0, "paper" => 1, "scissors" => 2)
 

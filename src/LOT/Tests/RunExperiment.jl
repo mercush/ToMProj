@@ -1,7 +1,7 @@
 import CSV
 import JSON
 using Statistics
-include("Inference.jl")
+include("../Inference.jl")
 
 
 # brockbank

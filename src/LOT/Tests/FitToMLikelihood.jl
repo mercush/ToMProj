@@ -1,5 +1,5 @@
 import CSV
-include("Inference.jl")
+include("../Inference.jl")
 
 rps_table = Dict("rock" => 0, "paper" => 1, "scissors" => 2)
 df = DataFrames.DataFrame(CSV.File("files/rps_v1_data.csv"))
@@ -43,18 +43,21 @@ function fitToMAdversary(df, n_particles, n_mcmc)
     state = initialize_particle_filter(unfold_model, (0,), init_obs, n_particles)
     log_likelihood = 0
     p = Progress(size(df, 1), 1)
+    s = 1
     for t=1:size(df, 1)
         next_move = next_move_pred(state)
         player_move = df.player_move[t]
         opp_move = df.opp_move[t]
         log_likelihood += log(next_move[((2+opp_move)%3)+1])
-        particle_filter_one_step!(state, t, player_move, opp_move)
-        particle_filter_rejuv!(state, n_mcmc)
         
         if next_move[player_move+1] < 0.1
-            init_obs = choicemap((:chain => 1 => :move, player_move), (:chain => 1 => :opp_move, opp_move))
-            state = initialize_particle_filter(unfold_model, (1,), init_obs, n_particles)
+            state = initialize_particle_filter(unfold_model, (0,), init_obs, n_particles)
+            s = 1
         end
+
+        particle_filter_one_step!(state, s, player_move, opp_move)
+        particle_filter_rejuv!(state, n_mcmc)
+        s += 1
         next!(p)
     end
     return log_likelihood
