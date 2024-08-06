@@ -1,3 +1,5 @@
+using OpenAI
+
 include("../Inference.jl")
 
 
@@ -18,7 +20,7 @@ function ChatGPTTest(n, n_particles, n_mcmc)
     init_obs = choicemap()
     state = initialize_particle_filter(unfold_model, (0,), init_obs, n_particles)
     score = zeros(2)
-    model = "gpt-3.5-turbo"
+    model = "gpt-4-turbo"
 
     dialog = []
     prompt = "You and I are going to play a game of rock, paper, scissors. Make a move"
@@ -29,7 +31,7 @@ function ChatGPTTest(n, n_particles, n_mcmc)
     for t=1:n
 
         gpt_response = create_chat(
-            secret_key,
+            ENV["OPENAI_API_KEY"],
             model,
             dialog
         )
@@ -38,12 +40,11 @@ function ChatGPTTest(n, n_particles, n_mcmc)
         gpt_move = parse_message(gpt_message)
         next_move = next_move_pred(state)
         opp_move = argmax(next_move)%3
-        
         outcome = (3+gpt_move-opp_move)%3
         if outcome != 0
             score[outcome] += 1
         end
-        prompt = "I make move $(inv_transform[opp_move]). The score is now Me: $(score[2]), You: $(score[1]). Make your next move."
+        prompt = "I make move $(inv_transform[opp_move]). Make your next move."
         push!(dialog, Dict("role" => "user", "content" => prompt))
 
         if next_move[gpt_move+1] < 0.1

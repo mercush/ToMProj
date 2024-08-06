@@ -1,4 +1,4 @@
-include("Inference.jl")
+include("../Inference.jl")
 
 function play(n_particles, n_mcmc)
     transform = Dict("r" => 0, "p" => 1, "s" => 2)
@@ -38,7 +38,6 @@ function play(n_particles, n_mcmc)
         particle_filter_rejuv!(state, n_mcmc)
         t += 1
     end
-    return score
 end
 
 play(50, 50)
