@@ -18,7 +18,7 @@ function play(n_particles, n_mcmc)
         next_move = next_move_pred(state)
         println("I thought your next move distribution would be ", next_move)
         opp_move = argmax(next_move)%3
-        outcome = (3+gpt_move-opp_move)%3
+        outcome = (3+player_move-opp_move)%3
         if outcome != 0
             score[outcome] += 1
         end

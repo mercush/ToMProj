@@ -4,10 +4,22 @@
 
 
 
-
+### Easy CFG
 Op -> MakeMove(MoveType) | If(Bool) (Op) Else (Op)
 
 MoveType -> RawMove | PrevMove | PrevOppMove | Inc(MoveType) | Dec(MoveType) | Random
+
+Expr -> Z3 | Int | CountMove | CountOppMove | CountTransition | CountOppTransition | PrevMoveExpr | PrevOppMoveExpr | IncExpr(Expr) | DecExpr(Expr) | PrevOutcome
+
+Random -> RandomMoveFixed | RandomTransitionFixed | RandomCorrPrevMove | RandomInvCorrPrevMove | RandomCorrPrevTransition | RandomInvCorrPrevTransition
+
+Bool -> Equals(Expr, Expr) | Lt(Expr, Expr) | Leq(Expr, Expr) | Flip
+
+
+### Hard CFG
+Op -> MakeMove(MoveType) | If(Bool) (Op) Else (Op)
+
+MoveType -> RawMove | PrevMove | PrevOppMove | Inc(MoveType) | Dec(MoveType) | Random | ToM
 
 Expr -> Z3 | Int | CountMove | CountOppMove | CountTransition | CountOppTransition | PrevMoveExpr | PrevOppMoveExpr | IncExpr(Expr) | DecExpr(Expr) | PrevOutcome
 
@@ -53,3 +65,16 @@ show what chatgpt in an interpretable way (repetitive and stupid strategy despit
 
 
 
+Playing around with the model:
+Open Julia REPL. Activate the environment
+```
+] activate .
+```
+If you want to play against yourself, exit package manager mode and run
+```
+include("src/LOT/Tests/Play.jl")
+```
+If you want to simulate the model playing against ChatGPT,
+```
+include("src/LOT/Tests/ToMGPTPlay.jl")
+```

@@ -23,7 +23,7 @@ function ChatGPTTest(n, n_particles, n_mcmc)
     model = "gpt-4-turbo"
 
     dialog = []
-    prompt = "You and I are going to play a game of rock, paper, scissors. Make a move"
+    prompt = "You and I are going to play a game of rock, paper, scissors. Make a move. Answer by simply saying \'rock, paper, or scisors\'. "
     push!(dialog, Dict("role" => "user", "content" => prompt))
 
     s = 1
